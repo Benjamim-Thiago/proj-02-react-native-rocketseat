@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+
 import { FlatList } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+
+import { groupsGetAll } from '@storage/group/groupsGetAll';
 
 import { Container } from './styles';
 
@@ -9,7 +13,26 @@ import { GroupCard } from '@components/GroupCard';
 import { ListEmpty } from '@components/ListEmpty';
 import { Button } from '@components/Button';
 export function Groups() {
-  const [groups, setGroups] = useState<string[]>(['Galera da Rocket']);
+  const [groups, setGroups] = useState<string[]>([]);
+  
+  const navigation = useNavigation()
+  function handleNewGroup() {
+    navigation.navigate('new');
+  }
+
+  async function fetchGroups() {
+    try {
+      const data = await groupsGetAll();
+      setGroups(data)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useFocusEffect(useCallback(() => {
+    fetchGroups()
+  },[]))
+  
   return (
     <Container>
       <Header />
@@ -34,6 +57,7 @@ export function Groups() {
       
       <Button 
         title='Criar nova turma'
+        onPress={handleNewGroup}
       />
     </Container>
   );
